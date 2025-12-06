@@ -14,7 +14,264 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      clients: {
+        Row: {
+          budget_google: number | null
+          budget_meta: number | null
+          budget_tiktok: number | null
+          created_at: string | null
+          google_ads_link: string | null
+          google_drive_link: string | null
+          id: string
+          last_meeting: string | null
+          meeting_minutes_link: string | null
+          meta_ads_link: string | null
+          name: string
+          priority: string | null
+          status: string | null
+          updated_at: string | null
+          whatsapp_group_id: string | null
+        }
+        Insert: {
+          budget_google?: number | null
+          budget_meta?: number | null
+          budget_tiktok?: number | null
+          created_at?: string | null
+          google_ads_link?: string | null
+          google_drive_link?: string | null
+          id?: string
+          last_meeting?: string | null
+          meeting_minutes_link?: string | null
+          meta_ads_link?: string | null
+          name: string
+          priority?: string | null
+          status?: string | null
+          updated_at?: string | null
+          whatsapp_group_id?: string | null
+        }
+        Update: {
+          budget_google?: number | null
+          budget_meta?: number | null
+          budget_tiktok?: number | null
+          created_at?: string | null
+          google_ads_link?: string | null
+          google_drive_link?: string | null
+          id?: string
+          last_meeting?: string | null
+          meeting_minutes_link?: string | null
+          meta_ads_link?: string | null
+          name?: string
+          priority?: string | null
+          status?: string | null
+          updated_at?: string | null
+          whatsapp_group_id?: string | null
+        }
+        Relationships: []
+      }
+      direct_messages: {
+        Row: {
+          content: string
+          created_at: string | null
+          id: string
+          is_read: boolean | null
+          receiver_id: string
+          sender_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          receiver_id: string
+          sender_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          receiver_id?: string
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "direct_messages_receiver_id_fkey"
+            columns: ["receiver_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "direct_messages_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      external_messages: {
+        Row: {
+          client_id: string
+          content: string
+          direction: string
+          id: string
+          sender_name: string
+          timestamp: string | null
+        }
+        Insert: {
+          client_id: string
+          content: string
+          direction: string
+          id?: string
+          sender_name: string
+          timestamp?: string | null
+        }
+        Update: {
+          client_id?: string
+          content?: string
+          direction?: string
+          id?: string
+          sender_name?: string
+          timestamp?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "external_messages_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      internal_messages: {
+        Row: {
+          content: string
+          created_at: string | null
+          id: string
+          mentions: string[] | null
+          quoted_external_message_id: string | null
+          sender_id: string
+          ticket_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string | null
+          id?: string
+          mentions?: string[] | null
+          quoted_external_message_id?: string | null
+          sender_id: string
+          ticket_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string | null
+          id?: string
+          mentions?: string[] | null
+          quoted_external_message_id?: string | null
+          sender_id?: string
+          ticket_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "internal_messages_quoted_external_message_id_fkey"
+            columns: ["quoted_external_message_id"]
+            isOneToOne: false
+            referencedRelation: "external_messages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "internal_messages_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "internal_messages_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "tickets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string | null
+          id: string
+          name: string
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string | null
+          id: string
+          name: string
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string | null
+          id?: string
+          name?: string
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      tickets: {
+        Row: {
+          assignee_id: string | null
+          client_id: string
+          created_at: string | null
+          id: string
+          is_archived: boolean | null
+          status: string | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          assignee_id?: string | null
+          client_id: string
+          created_at?: string | null
+          id?: string
+          is_archived?: boolean | null
+          status?: string | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          assignee_id?: string | null
+          client_id?: string
+          created_at?: string | null
+          id?: string
+          is_archived?: boolean | null
+          status?: string | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tickets_assignee_id_fkey"
+            columns: ["assignee_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tickets_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
