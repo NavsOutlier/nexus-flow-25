@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useInternalMessages, useSendInternalMessage } from '@/hooks/useMessages';
 import { useProfiles } from '@/hooks/useProfiles';
+import { supabase } from '@/integrations/supabase/client';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -32,6 +33,23 @@ export function TicketThread({ ticketId, onHighlightExternalMessage }: TicketThr
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages]);
+
+  // Mark messages as read - SAME PATTERN AS DirectChat
+  useEffect(() => {
+    if (!ticketId || !messages) return;
+    
+    const unreadIds = messages
+      .filter((m: any) => !m.is_read)
+      .map((m: any) => m.id);
+    
+    if (unreadIds.length > 0) {
+      supabase
+        .from('internal_messages')
+        .update({ is_read: true })
+        .in('id', unreadIds)
+        .then(() => {});
+    }
+  }, [messages, ticketId]);
 
   const handleSend = async () => {
     if (!content.trim() || !user) return;
