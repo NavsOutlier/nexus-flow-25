@@ -3,7 +3,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useProfile } from '@/hooks/useProfiles';
 import { useClient } from '@/hooks/useClients';
 import { useExternalMessages, useSendExternalMessage, ExternalMessage } from '@/hooks/useMessages';
-import { useMarkExternalMessagesAsRead } from '@/hooks/useNotifications';
+import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -24,19 +24,28 @@ export function ExternalChat({ clientId, highlightedMessageId, onHighlightMessag
   const { data: client } = useClient(clientId);
   const { data: messages } = useExternalMessages(clientId);
   const sendMessage = useSendExternalMessage();
-  const markAsRead = useMarkExternalMessagesAsRead();
   
   const [message, setMessage] = useState('');
   const [discussMessage, setDiscussMessage] = useState<ExternalMessage | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const messageRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
-  // Mark external messages as read when viewing
+  // Mark messages as read - SAME PATTERN AS DirectChat
   useEffect(() => {
-    if (clientId) {
-      markAsRead.mutate(clientId);
+    if (!clientId || !messages) return;
+    
+    const unreadIds = messages
+      .filter((m) => !m.is_read)
+      .map((m) => m.id);
+    
+    if (unreadIds.length > 0) {
+      supabase
+        .from('external_messages')
+        .update({ is_read: true })
+        .in('id', unreadIds)
+        .then(() => {});
     }
-  }, [clientId]);
+  }, [messages, clientId]);
 
   useEffect(() => {
     if (scrollRef.current) {
