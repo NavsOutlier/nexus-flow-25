@@ -5,6 +5,7 @@ import { useClients } from '@/hooks/useClients';
 import { useProfiles } from '@/hooks/useProfiles';
 import { useNewTicketsCount } from '@/hooks/useTickets';
 import { useUnreadDirectMessagesCount } from '@/hooks/useMessages';
+import { useUnreadExternalMessagesCount } from '@/hooks/useNotifications';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -157,7 +158,11 @@ function ClientItem({
   isSelected: boolean; 
   onClick: () => void;
 }) {
-  const { data: newCount } = useNewTicketsCount(client.id);
+  const { data: newTicketsCount } = useNewTicketsCount(client.id);
+  const { data: unreadExternal } = useUnreadExternalMessagesCount(client.id);
+  
+  // Show notification dot if there are new tickets OR unread external messages
+  const hasActivity = (newTicketsCount ?? 0) > 0 || (unreadExternal ?? 0) > 0;
 
   return (
     <button
@@ -171,14 +176,14 @@ function ClientItem({
         <div className="h-8 w-8 rounded-lg bg-sidebar-accent flex items-center justify-center">
           <Users className="h-4 w-4" />
         </div>
-        {(newCount ?? 0) > 0 && (
+        {hasActivity && (
           <span className="absolute -top-1 -right-1 h-2.5 w-2.5 rounded-full bg-status-unread animate-pulse" />
         )}
       </div>
       <div className="flex-1 min-w-0 text-left">
         <p className="text-sm truncate">{client.name}</p>
-        {(newCount ?? 0) > 0 && (
-          <p className="text-xs text-sidebar-muted">{newCount} New Topics</p>
+        {(newTicketsCount ?? 0) > 0 && (
+          <p className="text-xs text-sidebar-muted">{newTicketsCount} New Topics</p>
         )}
       </div>
     </button>

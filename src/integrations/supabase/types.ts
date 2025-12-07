@@ -116,6 +116,7 @@ export type Database = {
           content: string
           direction: string
           id: string
+          is_read: boolean
           sender_name: string
           timestamp: string | null
         }
@@ -124,6 +125,7 @@ export type Database = {
           content: string
           direction: string
           id?: string
+          is_read?: boolean
           sender_name: string
           timestamp?: string | null
         }
@@ -132,6 +134,7 @@ export type Database = {
           content?: string
           direction?: string
           id?: string
+          is_read?: boolean
           sender_name?: string
           timestamp?: string | null
         }
@@ -150,6 +153,7 @@ export type Database = {
           content: string
           created_at: string | null
           id: string
+          is_read: boolean
           mentions: string[] | null
           quoted_external_message_id: string | null
           sender_id: string
@@ -159,6 +163,7 @@ export type Database = {
           content: string
           created_at?: string | null
           id?: string
+          is_read?: boolean
           mentions?: string[] | null
           quoted_external_message_id?: string | null
           sender_id: string
@@ -168,6 +173,7 @@ export type Database = {
           content?: string
           created_at?: string | null
           id?: string
+          is_read?: boolean
           mentions?: string[] | null
           quoted_external_message_id?: string | null
           sender_id?: string

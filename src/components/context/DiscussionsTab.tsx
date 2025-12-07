@@ -1,8 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTickets, useUpdateTicket, Ticket } from '@/hooks/useTickets';
 import { useProfiles } from '@/hooks/useProfiles';
+import { useUnreadInternalMessagesByTicket, useMarkInternalMessagesAsRead } from '@/hooks/useNotifications';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
   Select,
@@ -36,6 +38,8 @@ const STATUS_OPTIONS = [
 export function DiscussionsTab({ clientId, onHighlightExternalMessage }: DiscussionsTabProps) {
   const { data: profiles } = useProfiles();
   const updateTicket = useUpdateTicket();
+  const { data: unreadCounts } = useUnreadInternalMessagesByTicket(clientId);
+  const markAsRead = useMarkInternalMessagesAsRead();
   const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
   const [showArchived, setShowArchived] = useState(false);
   const [statusFilter, setStatusFilter] = useState('all');
@@ -51,6 +55,13 @@ export function DiscussionsTab({ clientId, onHighlightExternalMessage }: Discuss
     if (assigneeFilter !== 'all' && ticket.assignee_id !== assigneeFilter) return false;
     return true;
   });
+
+  // Mark internal messages as read when viewing a ticket
+  useEffect(() => {
+    if (selectedTicket) {
+      markAsRead.mutate(selectedTicket.id);
+    }
+  }, [selectedTicket?.id]);
 
   const handleStatusChange = async (ticketId: string, status: string) => {
     await updateTicket.mutateAsync({ id: ticketId, status });
@@ -151,6 +162,7 @@ export function DiscussionsTab({ clientId, onHighlightExternalMessage }: Discuss
           {tickets?.map((ticket) => {
             const assignee = profiles?.find(p => p.id === ticket.assignee_id);
             const statusOption = STATUS_OPTIONS.find(s => s.value === ticket.status);
+            const unreadCount = unreadCounts?.[ticket.id] ?? 0;
 
             return (
               <div
@@ -169,7 +181,14 @@ export function DiscussionsTab({ clientId, onHighlightExternalMessage }: Discuss
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1 min-w-0">
-                    <p className="font-medium truncate">{ticket.title}</p>
+                    <div className="flex items-center gap-2">
+                      <p className="font-medium truncate">{ticket.title}</p>
+                      {unreadCount > 0 && (
+                        <Badge variant="destructive" className="text-[10px] h-5 px-1.5">
+                          {unreadCount} new
+                        </Badge>
+                      )}
+                    </div>
                     <p className="text-sm text-muted-foreground truncate">
                       {assignee?.name ?? 'Sem responsável'}
                     </p>
@@ -208,7 +227,7 @@ export function DiscussionsTab({ clientId, onHighlightExternalMessage }: Discuss
                   <div className="flex items-center gap-3 text-xs text-muted-foreground">
                     <span className="flex items-center gap-1">
                       <MessageSquare className="h-3 w-3" />
-                      0
+                      {unreadCount > 0 ? unreadCount : 0}
                     </span>
                     <span>{format(new Date(ticket.created_at!), 'dd/MM')}</span>
                   </div>
