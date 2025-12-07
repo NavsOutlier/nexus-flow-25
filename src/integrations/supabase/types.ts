@@ -203,6 +203,73 @@ export type Database = {
           },
         ]
       }
+      notifications: {
+        Row: {
+          client_id: string | null
+          created_at: string | null
+          description: string | null
+          id: string
+          is_read: boolean | null
+          message_id: string | null
+          metadata: Json | null
+          read_at: string | null
+          ticket_id: string | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          client_id?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_read?: boolean | null
+          message_id?: string | null
+          metadata?: Json | null
+          read_at?: string | null
+          ticket_id?: string | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          client_id?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_read?: boolean | null
+          message_id?: string | null
+          metadata?: Json | null
+          read_at?: string | null
+          ticket_id?: string | null
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "tickets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
