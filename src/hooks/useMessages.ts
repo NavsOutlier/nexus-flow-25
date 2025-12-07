@@ -148,26 +148,3 @@ export function useSendDirectMessage() {
     },
   });
 }
-
-export function useUnreadDirectMessagesCount(userId?: string) {
-  return useQuery({
-    queryKey: ['unread-dms', userId],
-    queryFn: async () => {
-      if (!userId) return {};
-      const { data, error } = await supabase
-        .from('direct_messages')
-        .select('sender_id')
-        .eq('receiver_id', userId)
-        .eq('is_read', false);
-      
-      if (error) throw error;
-      
-      const counts: Record<string, number> = {};
-      data.forEach((msg) => {
-        counts[msg.sender_id] = (counts[msg.sender_id] || 0) + 1;
-      });
-      return counts;
-    },
-    enabled: !!userId,
-  });
-}

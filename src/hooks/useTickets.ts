@@ -28,27 +28,6 @@ export function useTickets(clientId?: string, includeArchived: boolean = false) 
   });
 }
 
-export function useNewTicketsCount(clientId?: string) {
-  return useQuery({
-    queryKey: ['tickets-count', clientId],
-    queryFn: async () => {
-      let query = supabase
-        .from('tickets')
-        .select('id', { count: 'exact' })
-        .eq('status', 'Novo')
-        .eq('is_archived', false);
-      
-      if (clientId) {
-        query = query.eq('client_id', clientId);
-      }
-      
-      const { count, error } = await query;
-      if (error) throw error;
-      return count ?? 0;
-    },
-  });
-}
-
 export function useCreateTicket() {
   const queryClient = useQueryClient();
 

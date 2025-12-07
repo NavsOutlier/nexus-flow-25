@@ -1,16 +1,13 @@
 import { useState, useRef, useEffect } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
 import { useInternalMessages, useSendInternalMessage } from '@/hooks/useMessages';
 import { useProfiles } from '@/hooks/useProfiles';
-import { supabase } from '@/integrations/supabase/client';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Send, Quote } from 'lucide-react';
 import { format } from 'date-fns';
-import { cn } from '@/lib/utils';
 
 interface TicketThreadProps {
   ticketId: string;
@@ -19,7 +16,6 @@ interface TicketThreadProps {
 
 export function TicketThread({ ticketId, onHighlightExternalMessage }: TicketThreadProps) {
   const { user } = useAuth();
-  const queryClient = useQueryClient();
   const { data: messages } = useInternalMessages(ticketId);
   const { data: profiles } = useProfiles();
   const sendMessage = useSendInternalMessage();
@@ -35,27 +31,6 @@ export function TicketThread({ ticketId, onHighlightExternalMessage }: TicketThr
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages]);
-
-  // Mark messages as read - SAME PATTERN AS DirectChat
-  useEffect(() => {
-    if (!ticketId || !messages) return;
-    
-    const unreadIds = messages
-      .filter((m: any) => !m.is_read)
-      .map((m: any) => m.id);
-    
-    if (unreadIds.length > 0) {
-      supabase
-        .from('internal_messages')
-        .update({ is_read: true })
-        .in('id', unreadIds)
-        .then(() => {
-          queryClient.invalidateQueries({ queryKey: ['unread-internal', ticketId] });
-          queryClient.invalidateQueries({ queryKey: ['unread-internal-by-ticket'] });
-          queryClient.invalidateQueries({ queryKey: ['unread-mentions'] });
-        });
-    }
-  }, [messages, ticketId, queryClient]);
 
   const handleSend = async () => {
     if (!content.trim() || !user) return;

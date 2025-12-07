@@ -2,7 +2,6 @@ import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProfile } from '@/hooks/useProfiles';
 import { useDirectMessages, useSendDirectMessage } from '@/hooks/useMessages';
-import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -29,23 +28,6 @@ export function DirectChat({ partnerId }: DirectChatProps) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages]);
-
-  // Mark messages as read
-  useEffect(() => {
-    if (!user?.id || !messages) return;
-    
-    const unreadIds = messages
-      .filter((m: any) => m.receiver_id === user.id && !m.is_read)
-      .map((m: any) => m.id);
-    
-    if (unreadIds.length > 0) {
-      supabase
-        .from('direct_messages')
-        .update({ is_read: true })
-        .in('id', unreadIds)
-        .then(() => {});
-    }
-  }, [messages, user?.id]);
 
   const handleSend = async () => {
     if (!message.trim() || !user) return;
