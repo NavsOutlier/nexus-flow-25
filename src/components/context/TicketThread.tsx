@@ -1,5 +1,4 @@
 import { useState, useRef, useEffect } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
 import { useInternalMessages, useSendInternalMessage } from '@/hooks/useMessages';
 import { useProfiles } from '@/hooks/useProfiles';
@@ -18,7 +17,6 @@ interface TicketThreadProps {
 }
 
 export function TicketThread({ ticketId, onHighlightExternalMessage }: TicketThreadProps) {
-  const queryClient = useQueryClient();
   const { user } = useAuth();
   const { data: messages } = useInternalMessages(ticketId);
   const { data: profiles } = useProfiles();
@@ -36,7 +34,7 @@ export function TicketThread({ ticketId, onHighlightExternalMessage }: TicketThr
     }
   }, [messages]);
 
-  // Mark messages as read with query invalidation
+  // Mark messages as read - SAME PATTERN AS DirectChat
   useEffect(() => {
     if (!ticketId || !messages) return;
     
@@ -49,14 +47,9 @@ export function TicketThread({ ticketId, onHighlightExternalMessage }: TicketThr
         .from('internal_messages')
         .update({ is_read: true })
         .in('id', unreadIds)
-        .then(() => {
-          // Invalidate queries to update sidebar and ticket list
-          queryClient.invalidateQueries({ queryKey: ['unread-internal', ticketId] });
-          queryClient.invalidateQueries({ queryKey: ['unread-internal-by-ticket'] });
-          queryClient.invalidateQueries({ queryKey: ['internal-messages', ticketId] });
-        });
+        .then(() => {});
     }
-  }, [messages, ticketId, queryClient]);
+  }, [messages, ticketId]);
 
   const handleSend = async () => {
     if (!content.trim() || !user) return;
