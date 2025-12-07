@@ -1,10 +1,8 @@
 import { useState, useRef, useEffect, forwardRef } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProfile } from '@/hooks/useProfiles';
 import { useClient } from '@/hooks/useClients';
 import { useExternalMessages, useSendExternalMessage, ExternalMessage } from '@/hooks/useMessages';
-import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -21,7 +19,6 @@ interface ExternalChatProps {
 
 export function ExternalChat({ clientId, highlightedMessageId, onHighlightMessage }: ExternalChatProps) {
   const { user } = useAuth();
-  const queryClient = useQueryClient();
   const { data: profile } = useProfile(user?.id);
   const { data: client } = useClient(clientId);
   const { data: messages } = useExternalMessages(clientId);
@@ -31,26 +28,6 @@ export function ExternalChat({ clientId, highlightedMessageId, onHighlightMessag
   const [discussMessage, setDiscussMessage] = useState<ExternalMessage | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const messageRefs = useRef<Record<string, HTMLDivElement | null>>({});
-
-  // Mark messages as read - SAME PATTERN AS DirectChat
-  useEffect(() => {
-    if (!clientId || !messages) return;
-    
-    const unreadIds = messages
-      .filter((m) => !m.is_read)
-      .map((m) => m.id);
-    
-    if (unreadIds.length > 0) {
-      supabase
-        .from('external_messages')
-        .update({ is_read: true })
-        .in('id', unreadIds)
-        .then(() => {
-          queryClient.invalidateQueries({ queryKey: ['unread-external', clientId] });
-          queryClient.invalidateQueries({ queryKey: ['client-unread-activity', clientId] });
-        });
-    }
-  }, [messages, clientId, queryClient]);
 
   useEffect(() => {
     if (scrollRef.current) {

@@ -3,9 +3,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useProfile } from '@/hooks/useProfiles';
 import { useClients } from '@/hooks/useClients';
 import { useProfiles } from '@/hooks/useProfiles';
-import { useNewTicketsCount } from '@/hooks/useTickets';
-import { useUnreadDirectMessagesCount } from '@/hooks/useMessages';
-import { useUnreadExternalMessagesCount } from '@/hooks/useNotifications';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -30,7 +27,6 @@ export function AppSidebar({
   const { data: profile } = useProfile(user?.id);
   const { data: clients } = useClients();
   const { data: profiles } = useProfiles();
-  const { data: unreadCounts } = useUnreadDirectMessagesCount(user?.id);
   const [showCreateClient, setShowCreateClient] = useState(false);
 
   const teamMembers = profiles?.filter(p => p.id !== user?.id) ?? [];
@@ -65,15 +61,22 @@ export function AppSidebar({
           </div>
           <div className="space-y-1">
             {clients?.map((client) => (
-              <ClientItem 
-                key={client.id} 
-                client={client}
-                isSelected={selectedClientId === client.id}
+              <button
+                key={client.id}
                 onClick={() => {
                   onSelectClient(client.id);
                   onSelectMember(null);
                 }}
-              />
+                className={cn(
+                  "w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors",
+                  selectedClientId === client.id ? "bg-sidebar-accent" : "hover:bg-sidebar-accent/50"
+                )}
+              >
+                <div className="h-8 w-8 rounded-lg bg-sidebar-accent flex items-center justify-center">
+                  <Users className="h-4 w-4" />
+                </div>
+                <span className="flex-1 text-left text-sm truncate">{client.name}</span>
+              </button>
             ))}
           </div>
         </div>
@@ -111,9 +114,6 @@ export function AppSidebar({
                   )} />
                 </div>
                 <span className="flex-1 text-left text-sm truncate">{member.name}</span>
-                {unreadCounts?.[member.id] && (
-                  <span className="h-2 w-2 rounded-full bg-status-unread animate-pulse" />
-                )}
               </button>
             ))}
           </div>
@@ -146,46 +146,5 @@ export function AppSidebar({
 
       <CreateClientDialog open={showCreateClient} onOpenChange={setShowCreateClient} />
     </div>
-  );
-}
-
-function ClientItem({ 
-  client, 
-  isSelected, 
-  onClick 
-}: { 
-  client: any; 
-  isSelected: boolean; 
-  onClick: () => void;
-}) {
-  const { data: newTicketsCount } = useNewTicketsCount(client.id);
-  const { data: unreadExternal } = useUnreadExternalMessagesCount(client.id);
-  
-  // Show notification dot if there are new tickets OR unread external messages
-  const hasActivity = (newTicketsCount ?? 0) > 0 || (unreadExternal ?? 0) > 0;
-
-  return (
-    <button
-      onClick={onClick}
-      className={cn(
-        "w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors",
-        isSelected ? "bg-sidebar-accent" : "hover:bg-sidebar-accent/50"
-      )}
-    >
-      <div className="relative">
-        <div className="h-8 w-8 rounded-lg bg-sidebar-accent flex items-center justify-center">
-          <Users className="h-4 w-4" />
-        </div>
-        {hasActivity && (
-          <span className="absolute -top-1 -right-1 h-2.5 w-2.5 rounded-full bg-status-unread animate-pulse" />
-        )}
-      </div>
-      <div className="flex-1 min-w-0 text-left">
-        <p className="text-sm truncate">{client.name}</p>
-        {(newTicketsCount ?? 0) > 0 && (
-          <p className="text-xs text-sidebar-muted">{newTicketsCount} New Topics</p>
-        )}
-      </div>
-    </button>
   );
 }
