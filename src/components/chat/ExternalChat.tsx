@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, forwardRef } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProfile } from '@/hooks/useProfiles';
 import { useClient } from '@/hooks/useClients';
@@ -19,6 +20,7 @@ interface ExternalChatProps {
 }
 
 export function ExternalChat({ clientId, highlightedMessageId, onHighlightMessage }: ExternalChatProps) {
+  const queryClient = useQueryClient();
   const { user } = useAuth();
   const { data: profile } = useProfile(user?.id);
   const { data: client } = useClient(clientId);
@@ -30,7 +32,7 @@ export function ExternalChat({ clientId, highlightedMessageId, onHighlightMessag
   const scrollRef = useRef<HTMLDivElement>(null);
   const messageRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
-  // Mark messages as read - SAME PATTERN AS DirectChat
+  // Mark messages as read - SAME PATTERN AS DirectChat with query invalidation
   useEffect(() => {
     if (!clientId || !messages) return;
     
@@ -43,9 +45,13 @@ export function ExternalChat({ clientId, highlightedMessageId, onHighlightMessag
         .from('external_messages')
         .update({ is_read: true })
         .in('id', unreadIds)
-        .then(() => {});
+        .then(() => {
+          // Invalidate queries to update sidebar
+          queryClient.invalidateQueries({ queryKey: ['unread-external', clientId] });
+          queryClient.invalidateQueries({ queryKey: ['external-messages', clientId] });
+        });
     }
-  }, [messages, clientId]);
+  }, [messages, clientId, queryClient]);
 
   useEffect(() => {
     if (scrollRef.current) {
