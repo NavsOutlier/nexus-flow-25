@@ -27,14 +27,6 @@ export function useRealtime() {
         { event: 'INSERT', schema: 'public', table: 'internal_messages' },
         (payload) => {
           queryClient.invalidateQueries({ queryKey: ['internal-messages', payload.new.ticket_id] });
-          queryClient.invalidateQueries({ queryKey: ['unread-internal-by-ticket'] });
-        }
-      )
-      .on(
-        'postgres_changes',
-        { event: 'UPDATE', schema: 'public', table: 'internal_messages' },
-        () => {
-          queryClient.invalidateQueries({ queryKey: ['unread-internal-by-ticket'] });
         }
       )
       .on(
