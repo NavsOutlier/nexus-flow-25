@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, forwardRef } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProfile } from '@/hooks/useProfiles';
 import { useClient } from '@/hooks/useClients';
@@ -20,6 +21,7 @@ interface ExternalChatProps {
 
 export function ExternalChat({ clientId, highlightedMessageId, onHighlightMessage }: ExternalChatProps) {
   const { user } = useAuth();
+  const queryClient = useQueryClient();
   const { data: profile } = useProfile(user?.id);
   const { data: client } = useClient(clientId);
   const { data: messages } = useExternalMessages(clientId);
@@ -43,9 +45,12 @@ export function ExternalChat({ clientId, highlightedMessageId, onHighlightMessag
         .from('external_messages')
         .update({ is_read: true })
         .in('id', unreadIds)
-        .then(() => {});
+        .then(() => {
+          queryClient.invalidateQueries({ queryKey: ['unread-external', clientId] });
+          queryClient.invalidateQueries({ queryKey: ['client-unread-activity', clientId] });
+        });
     }
-  }, [messages, clientId]);
+  }, [messages, clientId, queryClient]);
 
   useEffect(() => {
     if (scrollRef.current) {

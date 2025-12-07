@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
 import { useInternalMessages, useSendInternalMessage } from '@/hooks/useMessages';
 import { useProfiles } from '@/hooks/useProfiles';
@@ -18,6 +19,7 @@ interface TicketThreadProps {
 
 export function TicketThread({ ticketId, onHighlightExternalMessage }: TicketThreadProps) {
   const { user } = useAuth();
+  const queryClient = useQueryClient();
   const { data: messages } = useInternalMessages(ticketId);
   const { data: profiles } = useProfiles();
   const sendMessage = useSendInternalMessage();
@@ -47,9 +49,13 @@ export function TicketThread({ ticketId, onHighlightExternalMessage }: TicketThr
         .from('internal_messages')
         .update({ is_read: true })
         .in('id', unreadIds)
-        .then(() => {});
+        .then(() => {
+          queryClient.invalidateQueries({ queryKey: ['unread-internal', ticketId] });
+          queryClient.invalidateQueries({ queryKey: ['unread-internal-by-ticket'] });
+          queryClient.invalidateQueries({ queryKey: ['unread-mentions'] });
+        });
     }
-  }, [messages, ticketId]);
+  }, [messages, ticketId, queryClient]);
 
   const handleSend = async () => {
     if (!content.trim() || !user) return;
