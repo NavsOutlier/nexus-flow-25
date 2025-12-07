@@ -21,6 +21,15 @@ export function useRealtime() {
         { event: 'INSERT', schema: 'public', table: 'external_messages' },
         (payload) => {
           queryClient.invalidateQueries({ queryKey: ['external-messages', payload.new.client_id] });
+          queryClient.invalidateQueries({ queryKey: ['unread-external', payload.new.client_id] });
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'external_messages' },
+        (payload) => {
+          queryClient.invalidateQueries({ queryKey: ['external-messages', payload.new.client_id] });
+          queryClient.invalidateQueries({ queryKey: ['unread-external', payload.new.client_id] });
         }
       )
       .on(
@@ -28,6 +37,18 @@ export function useRealtime() {
         { event: 'INSERT', schema: 'public', table: 'internal_messages' },
         (payload) => {
           queryClient.invalidateQueries({ queryKey: ['internal-messages', payload.new.ticket_id] });
+          queryClient.invalidateQueries({ queryKey: ['unread-internal', payload.new.ticket_id] });
+          queryClient.invalidateQueries({ queryKey: ['unread-internal-by-ticket'] });
+          queryClient.invalidateQueries({ queryKey: ['unread-mentions'] });
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'internal_messages' },
+        (payload) => {
+          queryClient.invalidateQueries({ queryKey: ['internal-messages', payload.new.ticket_id] });
+          queryClient.invalidateQueries({ queryKey: ['unread-internal', payload.new.ticket_id] });
+          queryClient.invalidateQueries({ queryKey: ['unread-internal-by-ticket'] });
         }
       )
       .on(

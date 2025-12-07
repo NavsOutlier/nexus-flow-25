@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTickets, useCreateTicket } from '@/hooks/useTickets';
 import { useSendInternalMessage, ExternalMessage } from '@/hooks/useMessages';
+import { useProfiles } from '@/hooks/useProfiles';
 import {
   Dialog,
   DialogContent,
@@ -31,11 +32,13 @@ interface DiscussMessageDialogProps {
 export function DiscussMessageDialog({ message, clientId, onClose }: DiscussMessageDialogProps) {
   const { user } = useAuth();
   const { data: tickets } = useTickets(clientId);
+  const { data: profiles } = useProfiles();
   const createTicket = useCreateTicket();
   const sendInternalMessage = useSendInternalMessage();
 
   const [mode, setMode] = useState<'new' | 'existing'>('new');
   const [title, setTitle] = useState('');
+  const [assigneeId, setAssigneeId] = useState<string>('');
   const [selectedTicketId, setSelectedTicketId] = useState('');
   const [comment, setComment] = useState('');
 
@@ -57,6 +60,7 @@ export function DiscussMessageDialog({ message, clientId, onClose }: DiscussMess
           client_id: clientId,
           title: title.trim(),
           status: 'Novo',
+          assignee_id: assigneeId || null,
         });
         ticketId = newTicket.id;
       }
@@ -83,6 +87,7 @@ export function DiscussMessageDialog({ message, clientId, onClose }: DiscussMess
   const resetAndClose = () => {
     setMode('new');
     setTitle('');
+    setAssigneeId('');
     setSelectedTicketId('');
     setComment('');
     onClose();
@@ -115,15 +120,33 @@ export function DiscussMessageDialog({ message, clientId, onClose }: DiscussMess
           </RadioGroup>
 
           {mode === 'new' ? (
-            <div className="space-y-2">
-              <Label htmlFor="title">Título do Tópico</Label>
-              <Input
-                id="title"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="Ex: Dúvida sobre campanha"
-                autoFocus
-              />
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="title">Título do Tópico</Label>
+                <Input
+                  id="title"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  placeholder="Ex: Dúvida sobre campanha"
+                  autoFocus
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="assignee">Atribuir a (opcional)</Label>
+                <Select value={assigneeId} onValueChange={setAssigneeId}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione um responsável..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">Nenhum</SelectItem>
+                    {profiles?.map((profile) => (
+                      <SelectItem key={profile.id} value={profile.id}>
+                        {profile.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           ) : (
             <div className="space-y-2">
