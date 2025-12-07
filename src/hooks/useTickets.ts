@@ -4,15 +4,18 @@ import type { Tables, TablesInsert, TablesUpdate } from '@/integrations/supabase
 
 export type Ticket = Tables<'tickets'>;
 
-export function useTickets(clientId?: string) {
+export function useTickets(clientId?: string, includeArchived: boolean = false) {
   return useQuery({
-    queryKey: ['tickets', clientId],
+    queryKey: ['tickets', clientId, includeArchived],
     queryFn: async () => {
       let query = supabase
         .from('tickets')
         .select('*')
-        .eq('is_archived', false)
         .order('created_at', { ascending: false });
+      
+      if (!includeArchived) {
+        query = query.eq('is_archived', false);
+      }
       
       if (clientId) {
         query = query.eq('client_id', clientId);

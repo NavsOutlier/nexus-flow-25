@@ -115,63 +115,79 @@ export function ExternalChat({ clientId, highlightedMessageId, onHighlightMessag
   );
 }
 
+import React, { forwardRef } from 'react';
+
 interface MessageBubbleProps {
   message: ExternalMessage;
   isHighlighted: boolean;
   onDiscuss: () => void;
 }
 
-const MessageBubble = ({ message, isHighlighted, onDiscuss, ref }: MessageBubbleProps & { ref: React.Ref<HTMLDivElement> }) => {
-  const [showAction, setShowAction] = useState(false);
-  const isOutbound = message.direction === 'outbound';
+const MessageBubble = forwardRef<HTMLDivElement, MessageBubbleProps>(
+  ({ message, isHighlighted, onDiscuss }, ref) => {
+    const [showAction, setShowAction] = useState(false);
+    const isOutbound = message.direction === 'outbound';
 
-  return (
-    <div
-      ref={ref}
-      className={cn(
-        "flex",
-        isOutbound ? "justify-end" : "justify-start"
-      )}
-      onMouseEnter={() => setShowAction(true)}
-      onMouseLeave={() => setShowAction(false)}
-    >
+    return (
       <div
+        ref={ref}
         className={cn(
-          "relative max-w-[70%] rounded-lg px-3 py-2 shadow-sm transition-all",
-          isOutbound 
-            ? "bg-whatsapp text-whatsapp-foreground rounded-br-none" 
-            : "bg-card rounded-bl-none",
-          isHighlighted && "ring-2 ring-primary ring-offset-2"
+          "flex items-start gap-2 group",
+          isOutbound ? "justify-end" : "justify-start"
         )}
+        onMouseEnter={() => setShowAction(true)}
+        onMouseLeave={() => setShowAction(false)}
       >
-        {!isOutbound && (
-          <p className="text-xs font-medium text-muted-foreground mb-1">
-            {message.sender_name}
-          </p>
-        )}
-        <p className="text-sm whitespace-pre-wrap">{message.content}</p>
-        <div className={cn(
-          "flex items-center gap-2 mt-1",
-          isOutbound ? "justify-end" : "justify-between"
-        )}>
-          {isOutbound && (
-            <span className="text-[10px] opacity-70">
-              Sent by {message.sender_name}
-            </span>
-          )}
-          <span className={cn(
-            "text-[10px]",
-            isOutbound ? "opacity-70" : "text-muted-foreground"
-          )}>
-            {format(new Date(message.timestamp!), 'HH:mm')}
-          </span>
-        </div>
-
-        {showAction && (
+        {isOutbound && showAction && (
           <Button
             size="sm"
             variant="secondary"
-            className="absolute -top-8 right-0 h-7 text-xs shadow-md"
+            className="h-7 text-xs shadow-md opacity-0 group-hover:opacity-100 transition-opacity shrink-0 self-center"
+            onClick={(e) => {
+              e.stopPropagation();
+              onDiscuss();
+            }}
+          >
+            Discuss Internally
+          </Button>
+        )}
+        <div
+          className={cn(
+            "relative max-w-[70%] rounded-lg px-3 py-2 shadow-sm transition-all",
+            isOutbound 
+              ? "bg-whatsapp text-whatsapp-foreground rounded-br-none" 
+              : "bg-card rounded-bl-none",
+            isHighlighted && "ring-2 ring-primary ring-offset-2"
+          )}
+        >
+          {!isOutbound && (
+            <p className="text-xs font-medium text-muted-foreground mb-1">
+              {message.sender_name}
+            </p>
+          )}
+          <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+          <div className={cn(
+            "flex items-center gap-2 mt-1",
+            isOutbound ? "justify-end" : "justify-between"
+          )}>
+            {isOutbound && (
+              <span className="text-[10px] opacity-70">
+                Sent by {message.sender_name}
+              </span>
+            )}
+            <span className={cn(
+              "text-[10px]",
+              isOutbound ? "opacity-70" : "text-muted-foreground"
+            )}>
+              {format(new Date(message.timestamp!), 'HH:mm')}
+            </span>
+          </div>
+        </div>
+        {!isOutbound && showAction && (
+          <Button
+            size="sm"
+            variant="secondary"
+            className="h-7 text-xs shadow-md opacity-0 group-hover:opacity-100 transition-opacity shrink-0 self-center"
             onClick={(e) => {
               e.stopPropagation();
               onDiscuss();
@@ -181,6 +197,8 @@ const MessageBubble = ({ message, isHighlighted, onDiscuss, ref }: MessageBubble
           </Button>
         )}
       </div>
-    </div>
-  );
-};
+    );
+  }
+);
+
+MessageBubble.displayName = 'MessageBubble';
