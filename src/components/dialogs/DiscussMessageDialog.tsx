@@ -60,7 +60,7 @@ export function DiscussMessageDialog({ message, clientId, onClose }: DiscussMess
           client_id: clientId,
           title: title.trim(),
           status: 'Novo',
-          assignee_id: assigneeId || null,
+          assignee_id: assigneeId && assigneeId !== 'none' ? assigneeId : null,
         });
         ticketId = newTicket.id;
       }
@@ -133,12 +133,12 @@ export function DiscussMessageDialog({ message, clientId, onClose }: DiscussMess
               </div>
               <div className="space-y-2">
                 <Label htmlFor="assignee">Atribuir a (opcional)</Label>
-                <Select value={assigneeId} onValueChange={setAssigneeId}>
+              <Select value={assigneeId} onValueChange={setAssigneeId}>
                   <SelectTrigger>
                     <SelectValue placeholder="Selecione um responsável..." />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Nenhum</SelectItem>
+                    <SelectItem value="none">Nenhum</SelectItem>
                     {profiles?.map((profile) => (
                       <SelectItem key={profile.id} value={profile.id}>
                         {profile.name}
