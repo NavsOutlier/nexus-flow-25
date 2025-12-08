@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useTickets, useUpdateTicket, Ticket } from '@/hooks/useTickets';
 import { useProfiles } from '@/hooks/useProfiles';
-import { useLastInternalMessage } from '@/hooks/useMessages';
+import { useLastInternalMessage, useInternalMessagesCount } from '@/hooks/useMessages';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -14,7 +14,7 @@ import {
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { ArrowLeft, MessageSquare, Plus, Archive, Filter } from 'lucide-react';
+import { ArrowLeft, MessageSquare, Plus, Archive, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { TicketThread } from './TicketThread';
@@ -35,19 +35,24 @@ function TicketLastMessage({ ticketId }: { ticketId: string }) {
   );
 }
 
-interface DiscussionsTabProps {
-  clientId: string;
-  onHighlightExternalMessage?: (id: string) => void;
+function TicketMessageCount({ ticketId }: { ticketId: string }) {
+  const { data: count } = useInternalMessagesCount(ticketId);
+  return <span>{count ?? 0}</span>;
 }
 
 const STATUS_OPTIONS = [
-  { value: 'all', label: 'Todos Status', color: 'bg-muted-foreground' },
+  { value: 'all', label: 'Todos', color: 'bg-muted-foreground' },
   { value: 'Novo', label: 'Novo', color: 'bg-blue-500' },
   { value: 'Em andamento', label: 'Em andamento', color: 'bg-yellow-500' },
   { value: 'Concluido', label: 'Concluído', color: 'bg-green-500' },
   { value: 'Pendencia Interna', label: 'Pend. Interna', color: 'bg-orange-500' },
   { value: 'Pendencia Externa', label: 'Pend. Externa', color: 'bg-purple-500' },
 ];
+
+interface DiscussionsTabProps {
+  clientId: string;
+  onHighlightExternalMessage?: (id: string) => void;
+}
 
 export function DiscussionsTab({ clientId, onHighlightExternalMessage }: DiscussionsTabProps) {
   const { data: profiles } = useProfiles();
@@ -115,11 +120,19 @@ export function DiscussionsTab({ clientId, onHighlightExternalMessage }: Discuss
         </div>
         
         {/* Filters Row */}
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex items-center gap-2">
           <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="h-8 w-[130px] text-xs">
-              <Filter className="h-3 w-3 mr-1" />
-              <SelectValue placeholder="Status" />
+            <SelectTrigger className={cn(
+              "h-8 w-auto gap-2 text-xs border-dashed",
+              statusFilter !== 'all' && "border-primary bg-primary/5"
+            )}>
+              <div className="flex items-center gap-1.5">
+                <span className={cn(
+                  "h-2 w-2 rounded-full",
+                  STATUS_OPTIONS.find(s => s.value === statusFilter)?.color ?? 'bg-muted-foreground'
+                )} />
+                <SelectValue placeholder="Status" />
+              </div>
             </SelectTrigger>
             <SelectContent>
               {STATUS_OPTIONS.map((option) => (
@@ -134,14 +147,28 @@ export function DiscussionsTab({ clientId, onHighlightExternalMessage }: Discuss
           </Select>
 
           <Select value={assigneeFilter} onValueChange={setAssigneeFilter}>
-            <SelectTrigger className="h-8 w-[130px] text-xs">
-              <SelectValue placeholder="Responsável" />
+            <SelectTrigger className={cn(
+              "h-8 w-auto gap-2 text-xs border-dashed",
+              assigneeFilter !== 'all' && "border-primary bg-primary/5"
+            )}>
+              <div className="flex items-center gap-1.5">
+                <User className="h-3 w-3" />
+                <SelectValue placeholder="Responsável" />
+              </div>
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Todos</SelectItem>
               {profiles?.map((profile) => (
                 <SelectItem key={profile.id} value={profile.id}>
-                  {profile.name}
+                  <div className="flex items-center gap-2">
+                    <Avatar className="h-4 w-4">
+                      <AvatarImage src={profile.avatar_url ?? undefined} />
+                      <AvatarFallback className="text-[8px]">
+                        {profile.name.substring(0, 2).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    {profile.name}
+                  </div>
                 </SelectItem>
               ))}
             </SelectContent>
@@ -222,6 +249,7 @@ export function DiscussionsTab({ clientId, onHighlightExternalMessage }: Discuss
                   <div className="flex items-center gap-3 text-xs text-muted-foreground">
                     <span className="flex items-center gap-1">
                       <MessageSquare className="h-3 w-3" />
+                      <TicketMessageCount ticketId={ticket.id} />
                     </span>
                     <span>{format(new Date(ticket.created_at!), 'dd/MM')}</span>
                   </div>
