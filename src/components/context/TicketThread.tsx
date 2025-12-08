@@ -5,7 +5,7 @@ import { useProfiles } from '@/hooks/useProfiles';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
 import { Send, Quote } from 'lucide-react';
 import { format } from 'date-fns';
 
@@ -24,7 +24,7 @@ export function TicketThread({ ticketId, onHighlightExternalMessage }: TicketThr
   const [showMentions, setShowMentions] = useState(false);
   const [mentionSearch, setMentionSearch] = useState('');
   const scrollRef = useRef<HTMLDivElement>(null);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const textareaRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -138,9 +138,9 @@ export function TicketThread({ ticketId, onHighlightExternalMessage }: TicketThr
         </div>
       </ScrollArea>
 
-      <div className="p-4 border-t relative">
+      <div className="p-4 bg-card border-t relative">
         {showMentions && filteredProfiles && filteredProfiles.length > 0 && (
-          <div className="absolute bottom-full left-4 right-4 mb-1 bg-popover border rounded-lg shadow-lg max-h-40 overflow-y-auto">
+          <div className="absolute bottom-full left-4 right-4 mb-1 bg-popover border rounded-lg shadow-lg max-h-40 overflow-y-auto z-10">
             {filteredProfiles.map((profile) => (
               <button
                 key={profile.id}
@@ -160,7 +160,7 @@ export function TicketThread({ ticketId, onHighlightExternalMessage }: TicketThr
         )}
 
         <div className="flex gap-2">
-          <Textarea
+          <Input
             ref={textareaRef}
             value={content}
             onChange={(e) => {
@@ -181,8 +181,7 @@ export function TicketThread({ ticketId, onHighlightExternalMessage }: TicketThr
             onKeyDown={handleKeyDown}
             onBlur={() => setTimeout(() => setShowMentions(false), 200)}
             placeholder="Digite uma mensagem... Use @ para mencionar"
-            className="min-h-[44px] max-h-32 resize-none"
-            rows={1}
+            className="flex-1"
           />
           <Button onClick={handleSend} disabled={!content.trim() || sendMessage.isPending}>
             <Send className="h-4 w-4" />
