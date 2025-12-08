@@ -168,3 +168,20 @@ export function useLastInternalMessage(ticketId?: string) {
     enabled: !!ticketId,
   });
 }
+
+export function useInternalMessagesCount(ticketId?: string) {
+  return useQuery({
+    queryKey: ['internal-messages-count', ticketId],
+    queryFn: async () => {
+      if (!ticketId) return 0;
+      const { count, error } = await supabase
+        .from('internal_messages')
+        .select('*', { count: 'exact', head: true })
+        .eq('ticket_id', ticketId);
+      
+      if (error) throw error;
+      return count ?? 0;
+    },
+    enabled: !!ticketId,
+  });
+}
