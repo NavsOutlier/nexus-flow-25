@@ -83,8 +83,8 @@ export function TicketThread({ ticketId, onHighlightExternalMessage }: TicketThr
   );
 
   return (
-    <div className="flex flex-col h-full">
-      <ScrollArea ref={scrollRef} className="flex-1 p-4">
+    <div className="flex flex-col h-full overflow-hidden">
+      <ScrollArea ref={scrollRef} className="flex-1 min-h-0 p-4">
         <div className="space-y-4">
           {messages?.map((msg: any) => {
             const sender = msg.sender;
