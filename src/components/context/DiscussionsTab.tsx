@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useTickets, useUpdateTicket, Ticket } from '@/hooks/useTickets';
 import { useProfiles } from '@/hooks/useProfiles';
+import { useLastInternalMessage } from '@/hooks/useMessages';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -18,6 +19,21 @@ import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { TicketThread } from './TicketThread';
 import { CreateTicketDialog } from '@/components/dialogs/CreateTicketDialog';
+
+function TicketLastMessage({ ticketId }: { ticketId: string }) {
+  const { data: lastMessage } = useLastInternalMessage(ticketId);
+  
+  if (!lastMessage) {
+    return <span className="text-muted-foreground italic">Sem mensagens</span>;
+  }
+  
+  const senderName = (lastMessage.sender as any)?.name ?? 'Alguém';
+  return (
+    <span className="truncate">
+      <span className="font-medium">{senderName}:</span> {lastMessage.content}
+    </span>
+  );
+}
 
 interface DiscussionsTabProps {
   clientId: string;
@@ -169,7 +185,7 @@ export function DiscussionsTab({ clientId, onHighlightExternalMessage }: Discuss
                   <div className="flex-1 min-w-0">
                     <p className="font-medium truncate">{ticket.title}</p>
                     <p className="text-sm text-muted-foreground truncate">
-                      {assignee?.name ?? 'Sem responsável'}
+                      <TicketLastMessage ticketId={ticket.id} />
                     </p>
                   </div>
                   {ticket.is_archived && (

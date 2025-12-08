@@ -148,3 +148,23 @@ export function useSendDirectMessage() {
     },
   });
 }
+
+export function useLastInternalMessage(ticketId?: string) {
+  return useQuery({
+    queryKey: ['last-internal-message', ticketId],
+    queryFn: async () => {
+      if (!ticketId) return null;
+      const { data, error } = await supabase
+        .from('internal_messages')
+        .select('*, sender:profiles(name)')
+        .eq('ticket_id', ticketId)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!ticketId,
+  });
+}
