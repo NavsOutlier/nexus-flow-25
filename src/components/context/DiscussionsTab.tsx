@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTickets, useUpdateTicket, Ticket } from '@/hooks/useTickets';
 import { useProfiles } from '@/hooks/useProfiles';
 import { useLastInternalMessage, useInternalMessagesCount } from '@/hooks/useMessages';
@@ -19,6 +19,7 @@ import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { TicketThread } from './TicketThread';
 import { CreateTicketDialog } from '@/components/dialogs/CreateTicketDialog';
+import { useNotifications } from '@/hooks/useNotifications';
 
 function TicketLastMessage({ ticketId }: { ticketId: string }) {
   const { data: lastMessage } = useLastInternalMessage(ticketId);
@@ -70,6 +71,15 @@ export function DiscussionsTab({ clientId, onHighlightExternalMessage }: Discuss
     if (assigneeFilter !== 'all' && ticket.assignee_id !== assigneeFilter) return false;
     return true;
   });
+
+  const { markContextAsRead } = useNotifications();
+
+  // When a ticket is selected/opened, mark notifications for that ticket as read
+  useEffect(() => {
+    if (selectedTicket) {
+      markContextAsRead.mutate({ ticket_id: selectedTicket.id });
+    }
+  }, [selectedTicket, markContextAsRead]);
 
   const handleStatusChange = async (ticketId: string, status: string) => {
     await updateTicket.mutateAsync({ id: ticketId, status });

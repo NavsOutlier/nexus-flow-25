@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
 import { AppSidebar } from '@/components/layout/AppSidebar';
 import { ExternalChat } from '@/components/chat/ExternalChat';
@@ -7,6 +7,7 @@ import { InternalContext } from '@/components/context/InternalContext';
 import { useRealtime } from '@/hooks/useRealtime';
 import { Button } from '@/components/ui/button';
 import { Maximize2, Minimize2, MessageSquare } from 'lucide-react';
+import { useNotifications } from '@/hooks/useNotifications';
 
 export default function Dashboard() {
   const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
@@ -14,7 +15,23 @@ export default function Dashboard() {
   const [isMaximized, setIsMaximized] = useState(false);
   const [highlightedMessageId, setHighlightedMessageId] = useState<string | null>(null);
 
+  const { markContextAsRead } = useNotifications();
+
   useRealtime();
+
+  // When a client is selected, mark external message notifications for that client as read
+  useEffect(() => {
+    if (selectedClientId) {
+      markContextAsRead.mutate({ type: 'external_message', client_id: selectedClientId });
+    }
+  }, [selectedClientId, markContextAsRead]);
+
+  // When a member (direct chat) is selected, mark direct_message notifications from that sender as read
+  useEffect(() => {
+    if (selectedMemberId) {
+      markContextAsRead.mutate({ type: 'direct_message', sender_id: selectedMemberId });
+    }
+  }, [selectedMemberId, markContextAsRead]);
 
   const renderMainContent = () => {
     // Mode B: Direct Message with team member

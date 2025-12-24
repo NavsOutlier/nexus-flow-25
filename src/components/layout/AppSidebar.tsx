@@ -9,6 +9,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { LogOut, Users, MessageSquare, Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { CreateClientDialog } from '@/components/dialogs/CreateClientDialog';
+import NotificationCenter from '@/components/notifications/NotificationCenter';
 
 interface AppSidebarProps {
   selectedClientId: string | null;
@@ -34,12 +35,17 @@ export function AppSidebar({
   return (
     <div className="flex flex-col h-full w-64 bg-sidebar text-sidebar-foreground">
       {/* Header */}
-      <div className="p-4 border-b border-sidebar-border">
+      <div className="p-4 border-b border-sidebar-border flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="p-2 rounded-lg bg-sidebar-accent">
             <MessageSquare className="h-5 w-5" />
           </div>
           <span className="font-semibold">Traffic Hub</span>
+        </div>
+
+        {/* Notification center */}
+        <div className="flex items-center gap-2">
+          <NotificationCenter />
         </div>
       </div>
 
