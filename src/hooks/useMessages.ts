@@ -42,7 +42,7 @@ export function useSendExternalMessage() {
       groupId: string;
     }) => {
       // Send to webhook
-      await fetch(WEBHOOK_URL, {
+      const res = await fetch(WEBHOOK_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -51,6 +51,17 @@ export function useSendExternalMessage() {
           sender: senderName,
         }),
       });
+
+      // Ensure webhook succeeded — if not, throw so the mutation fails and UI can react
+      if (!res.ok) {
+        let bodyText = '';
+        try {
+          bodyText = await res.text();
+        } catch {
+          bodyText = 'No body';
+        }
+        throw new Error(`Webhook error: ${res.status} ${res.statusText} - ${bodyText}`);
+      }
 
       // Save to database
       const { data, error } = await supabase
