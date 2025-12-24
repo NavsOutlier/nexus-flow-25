@@ -10,7 +10,6 @@ import { Send, MessageCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { DiscussMessageDialog } from '@/components/dialogs/DiscussMessageDialog';
-import { toast } from 'sonner';
 
 interface ExternalChatProps {
   clientId: string;
@@ -44,22 +43,7 @@ export function ExternalChat({ clientId, highlightedMessageId, onHighlightMessag
   }, [highlightedMessageId, onHighlightMessage]);
 
   const handleSend = async () => {
-    if (!message.trim() || !client?.whatsapp_group_id || !profile) {
-      // Provide explicit feedback if missing data prevents sending
-      if (!message.trim()) {
-        toast.error('Digite uma mensagem antes de enviar');
-        return;
-      }
-      if (!client?.whatsapp_group_id) {
-        toast.error('WhatsApp Group ID não configurado para este cliente');
-        return;
-      }
-      if (!profile) {
-        toast.error('Perfil do usuário não carregado');
-        return;
-      }
-      return;
-    }
+    if (!message.trim() || !client?.whatsapp_group_id || !profile) return;
 
     try {
       await sendMessage.mutateAsync({
@@ -69,10 +53,8 @@ export function ExternalChat({ clientId, highlightedMessageId, onHighlightMessag
         groupId: client.whatsapp_group_id,
       });
       setMessage('');
-      toast.success('Mensagem enviada');
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error sending message:', error);
-      toast.error(error?.message || 'Erro ao enviar mensagem');
     }
   };
 

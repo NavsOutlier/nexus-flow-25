@@ -6,7 +6,7 @@ import { useProfiles } from '@/hooks/useProfiles';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { LogOut, Users, MessageSquare, Plus, Bug } from 'lucide-react';
+import { LogOut, Users, MessageSquare, Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { CreateClientDialog } from '@/components/dialogs/CreateClientDialog';
 import NotificationCenter from '@/components/notifications/NotificationCenter';
@@ -43,18 +43,9 @@ export function AppSidebar({
           <span className="font-semibold">Traffic Hub</span>
         </div>
 
-        {/* Notification center + Debug button */}
+        {/* Notification center */}
         <div className="flex items-center gap-2">
           <NotificationCenter />
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 text-sidebar-muted hover:text-sidebar-foreground"
-            onClick={() => { window.location.href = '/debug'; }}
-            title="Open debug page"
-          >
-            <Bug className="h-4 w-4" />
-          </Button>
         </div>
       </div>
 
