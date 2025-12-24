@@ -6,7 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
-import Debug from "./pages/Debug";
+import Debug from "./pages/Debug.tsx";
 
 const queryClient = new QueryClient();
 
